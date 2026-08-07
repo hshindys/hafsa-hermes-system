@@ -75,17 +75,35 @@ def get_news():
     return "لا توجد أخبار متاحة دلوقتي 📰"
 
 
+STATE = HERMES_HOME / "scripts" / "delaa_photo_state.json"
+
+
 def get_photo():
-    """صورة عشوائية من ألبوم حفصة."""
+    """صورة من ألبوم حفصة — مختلفة عن اللي فات (بدون تكرار لحد ما تخلص)."""
     try:
-        imgs = list(ALBUM.glob("*.png"))
-        if imgs:
-            return str(random.choice(imgs))
+        imgs = [str(p) for p in ALBUM.glob("*.png") if p.name != "avatar.png"]
+        if not imgs:
+            av = VAULT / "👤 حفصة" / "avatar.png"
+            return str(av) if av.exists() else ""
+        # load last used
+        used = []
+        if STATE.exists():
+            try:
+                used = json.loads(STATE.read_text(encoding="utf-8")).get("used", [])
+            except Exception:
+                used = []
+        # pick one not in `used` (cyclic)
+        avail = [i for i in imgs if i not in used] or imgs
+        pick = random.choice(avail)
+        # update state: keep last len(imgs) entries
+        used.append(pick)
+        used = used[-len(imgs):]
+        STATE.parent.mkdir(parents=True, exist_ok=True)
+        STATE.write_text(json.dumps({"used": used}, ensure_ascii=False), encoding="utf-8")
+        return pick
     except Exception:
-        pass
-    # fallback avatar
-    av = VAULT / "👤 حفصة" / "avatar.png"
-    return str(av) if av.exists() else ""
+        av = VAULT / "👤 حفصة" / "avatar.png"
+        return str(av) if av.exists() else ""
 
 
 def main():
