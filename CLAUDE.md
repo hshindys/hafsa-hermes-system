@@ -20,8 +20,8 @@
 
 | الـ Vault | الـ Path | الوصف |
 |----------|---------|-------|
-| **Hafsa** | `C:/Users/hshin/OneDrive/Documents/Hafsa/` | خزنة حفصة — الهوية والشخصية |
-| **Hatem Nad** | `C:/Users/hshin/OneDrive/Documents/Hatem Nad/` | خزنة حاتم — Second Brain |
+| **Hafsa** | `D:/vaults/Hafsa/` | خزنة حفصة — الهوية والشخصية |
+| **Hatem Nad** | `D:/vaults/Hatem Nad/` | خزنة حاتم — Second Brain |
 
 ---
 
@@ -88,8 +88,8 @@
 
 ## 🔗 الـ Symlinks
 
-- `vault-hafsa` → `C:/Users/hshin/OneDrive/Documents/Hafsa/`
-- `vault-hatem-nad` → `C:/Users/hshin/OneDrive/Documents/Hatem Nad/`
+- `vault-hafsa` → `D:/vaults/Hafsa/`
+- `vault-hatem-nad` → `D:/vaults/Hatem Nad/`
 
 ## 🧠 الـ LLM Wiki System
 
