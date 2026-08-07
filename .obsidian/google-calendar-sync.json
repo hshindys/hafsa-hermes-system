@@ -1,0 +1,29 @@
+{
+  "enabled": true,
+  "auth": {
+    "clientId": "",
+    "clientSecret": ""
+  },
+  "defaultCalendar": "",
+  "googleCalendarRecursive": [],
+  "microsoftCalendars": [],
+  "microsoftCalendarRecursive": [],
+  "icalCalendars": [],
+  "lastUploadedEventTypes": [],
+  "eventTypes": [],
+  "templates": {
+    "eventTitle": "{{title}}",
+    "eventContent": "{{notes}}",
+    "eventLocation": "{{location}}",
+    "eventTag": "",
+    "eventReminder": "",
+    "eventAttendees": ""
+  },
+  "notesToEvents": {
+    "addToGCal": true,
+    "addToMS": false,
+    "addToICal": false,
+    "excludeFolders": [],
+    "excludeTags": []
+  }
+}
