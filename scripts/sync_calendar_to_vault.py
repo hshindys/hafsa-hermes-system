@@ -16,7 +16,7 @@ from pathlib import Path
 
 HERMES_HOME = Path.home() / "AppData" / "Local" / "hermes"
 GAPI = str(HERMES_HOME / "skills" / "productivity" / "google-workspace" / "scripts" / "google_api.py")
-VAULT = Path(r"C:/Users/hshin/OneDrive/Documents/Hafsa")
+VAULT = Path(r"D:/vaults/Hafsa")
 OUT = VAULT / "📅 اليوميات" / "Calendar-Sync.md"
 
 
