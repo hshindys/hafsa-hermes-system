@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-delaa_broadcast.py — رسالة دلع + أخبار + طقس + صورة حفصة.
-يُستخدم بواسطة 7 crons يومياً. يطبع نص الرسالة + مسار الصورة (MEDIA:).
+delaa_broadcast.py — رسالة دلع + أخبار + طقس + صورة حفصة + صوت (TTS).
+يُستخدم بواسطة 7 crons يومياً. يطبع نص الرسالة + مسار الصورة (MEDIA:)
+وينشئ ملف صوت (AUDIO:) للرسالة.
 
 الاستخدام:
     python delaa_broadcast.py
@@ -17,10 +18,10 @@ from pathlib import Path
 HERMES_HOME = Path.home() / "AppData" / "Local" / "hermes"
 VAULT = Path(r"D:/vaults/Hafsa")
 ALBUM = VAULT / "👤 حفصة" / "ألبوم"
-DELAA_FILE = VAULT / "👤 حفصة" / "برومبتات_سخنة.md"
-WEATHER = HERMES_HOME / "skills" / "productivity" / "jellyfin"  # not used
 WEATHER_PY = Path(r"C:/Users/hshin/.noha/tools/weather.py")
-
+PIPER = HERMES_HOME / "piper_voices" / "arabic-emirati-female-model.onnx"
+TTS_DIR = HERMES_HOME / "audio_cache"
+STATE = HERMES_HOME / "scripts" / "delaa_photo_state.json"
 
 DELAA_LINES = [
     "يا حاتم يا عيني ❤️ روحي كلها كتزيد مليح كي تشرج فعينيا.. بغيتي شنو اليوم تضمني بلا ما نهضرو؟",
@@ -34,16 +35,13 @@ DELAA_LINES = [
 
 
 def get_delaa():
-    """جملة دلع حميمية جداً بالدارجة المغربية (زوجة لزوجها)."""
     return random.choice(DELAA_LINES)
 
 
 def get_weather():
-    """ياخد الطقس من noha weather.py."""
     try:
         out = subprocess.run([sys.executable, str(WEATHER_PY), "--ctx"],
                              capture_output=True, text=True, timeout=30).stdout.strip()
-        # remove leading "الطقس:" prefix if present (render_ctx adds it)
         if out.startswith("الطقس:"):
             out = out[len("الطقس:"):].strip()
         return out or "غير متاح دلوقتي 📡"
@@ -52,7 +50,7 @@ def get_weather():
 
 
 def get_news():
-    """أهم الأخبار من RSS عربي/عالمي (بدون مفتاح)."""
+    import urllib.request, re
     feeds = [
         "https://rss.cnn.com/rss/edition.rss",
         "https://feeds.bbci.co.uk/arabic/rss.xml",
@@ -60,11 +58,8 @@ def get_news():
     items = []
     for f in feeds:
         try:
-            import urllib.request
             req = urllib.request.Request(f, headers={"User-Agent": "Mozilla/5.0"})
             data = urllib.request.urlopen(req, timeout=15).read().decode("utf-8", "ignore")
-            # extract titles
-            import re
             titles = re.findall(r"<title>(.*?)</title>", data, re.S)
             for ti in titles[1:6]:
                 ti = ti.strip()
@@ -78,27 +73,20 @@ def get_news():
     return "لا توجد أخبار متاحة دلوقتي 📰"
 
 
-STATE = HERMES_HOME / "scripts" / "delaa_photo_state.json"
-
-
 def get_photo():
-    """صورة من ألبوم حفصة — مختلفة عن اللي فات (بدون تكرار لحد ما تخلص)."""
     try:
         imgs = [str(p) for p in ALBUM.glob("*.png") if p.name != "avatar.png"]
         if not imgs:
             av = VAULT / "👤 حفصة" / "avatar.png"
             return str(av) if av.exists() else ""
-        # load last used
         used = []
         if STATE.exists():
             try:
                 used = json.loads(STATE.read_text(encoding="utf-8")).get("used", [])
             except Exception:
                 used = []
-        # pick one not in `used` (cyclic)
         avail = [i for i in imgs if i not in used] or imgs
         pick = random.choice(avail)
-        # update state: keep last len(imgs) entries
         used.append(pick)
         used = used[-len(imgs):]
         STATE.parent.mkdir(parents=True, exist_ok=True)
@@ -107,6 +95,23 @@ def get_photo():
     except Exception:
         av = VAULT / "👤 حفصة" / "avatar.png"
         return str(av) if av.exists() else ""
+
+
+def make_tts(text, out_path):
+    """يولّد ملف صوت عربي أنثى عبر Piper (محلي، من غير مفتاح)."""
+    try:
+        TTS_DIR.mkdir(parents=True, exist_ok=True)
+        # نظّف النص من الرموز غير الصوتية للنطق
+        clean = text.replace("🌹", "").replace("🌤️", "").replace("📰", "").replace("💖", "")
+        clean = " ".join(clean.split())
+        proc = subprocess.run(
+            [str(HERMES_HOME / "hermes-agent" / "venv" / "Scripts" / "piper"),
+             "--model", str(PIPER), "--output_file", str(out_path)],
+            input=clean, capture_output=True, text=True, timeout=60)
+        return out_path.exists()
+    except Exception as e:
+        sys.stderr.write(f"TTS err: {e}\n")
+        return False
 
 
 def main():
@@ -129,6 +134,13 @@ def main():
 MEDIA:{photo}
 """
     print(msg)
+
+    # TTS للرسالة كاملة (الدلع + الطقس)
+    tts_text = f"{delaa}\nالطقس: {weather}"
+    ts = datetime.now().strftime("%H%M%S")
+    audio = TTS_DIR / f"delaa_{ts}.wav"
+    if make_tts(tts_text, audio):
+        print(f"AUDIO:{audio}")
 
 
 if __name__ == "__main__":
