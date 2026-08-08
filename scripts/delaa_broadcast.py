@@ -140,7 +140,8 @@ MEDIA:{photo}
     ts = datetime.now().strftime("%H%M%S")
     audio = TTS_DIR / f"delaa_{ts}.wav"
     if make_tts(tts_text, audio):
-        print(f"AUDIO:{audio}")
+        # MEDIA: so Hermes delivers it as an attachable file (audio plays inline)
+        print(f"MEDIA:{audio}")
 
 
 if __name__ == "__main__":
