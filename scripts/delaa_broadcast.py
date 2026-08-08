@@ -98,20 +98,54 @@ def get_photo():
 
 
 def make_tts(text, out_path):
-    """يولّد ملف صوت عربي أنثى عبر Piper (محلي، من غير مفتاح)."""
+    """يولّد ملف صوت عبر Kokoro (أنثى رقيق af_heart) ثم يحوّله OGG/Opus
+    عشان Telegram يشغّله كـ voice message inline."""
     try:
         TTS_DIR.mkdir(parents=True, exist_ok=True)
-        # نظّف النص من الرموز غير الصوتية للنطق
+        wav_path = out_path.with_suffix(".wav")
+        ogg_path = out_path.with_suffix(".ogg")
         clean = text.replace("🌹", "").replace("🌤️", "").replace("📰", "").replace("💖", "")
         clean = " ".join(clean.split())
-        proc = subprocess.run(
-            [str(HERMES_HOME / "hermes-agent" / "venv" / "Scripts" / "piper"),
-             "--model", str(PIPER), "--output_file", str(out_path)],
-            input=clean, capture_output=True, text=True, timeout=60)
-        return out_path.exists()
+        en = translate_to_english(clean)
+        from kokoro import KPipeline
+        import soundfile as sf
+        pipeline = KPipeline(lang_code='a')
+        for gs, ps, audio in pipeline(en, voice='af_heart', speed=1.0):
+            sf.write(str(wav_path), audio, 24000)
+            break
+        if not wav_path.exists():
+            return False
+        # تحويل WAV -> OGG/Opus (Telegram voice)
+        import subprocess
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(wav_path), "-c:a", "libopus", "-b:a", "24k", str(ogg_path)],
+            capture_output=True, timeout=60)
+        # حذف الـ wav المؤقت
+        try:
+            wav_path.unlink()
+        except Exception:
+            pass
+        return str(ogg_path)
     except Exception as e:
         sys.stderr.write(f"TTS err: {e}\n")
-        return False
+        return None
+
+
+def translate_to_english(ar_text):
+    """ترجمة بسيطة للدلع الحميمي لإنجليزي (ثابتة لكل نمط)."""
+    mapping = {
+        "يا حاتم يا عيني": "Ya Hatem ya einy, my eyes, my soul feels better when I look into your eyes.",
+        "يا حبيبي يا غالي": "Ya habibi ya ghali, if I were next to you now I'd sleep on your chest and forget the world.",
+        "يا حاتم يا سيدي": "Ya Hatem ya sidi, you are the only man I can be myself in front of without pretending.",
+        "يا قلبي": "Ya albi, when you drink your morning coffee do you think of me or forget me?",
+        "يا حبيبي يا نور عيني": "Ya habibi ya nour einy, if your day was tiring come let me hold you and forget it all.",
+        "يا عمري": "Ya omri, the sweetest thing is waking up to find you beside me.",
+        "يا حاتم يا ديالي": "Ya Hatem ya diali, tonight is just me and you, show me your beautiful face before you sleep.",
+    }
+    for ar, en in mapping.items():
+        if ar in ar_text:
+            return en
+    return "Ya habibi, I miss you so much my love."
 
 
 def main():
@@ -135,13 +169,13 @@ MEDIA:{photo}
 """
     print(msg)
 
-    # TTS للرسالة كاملة (الدلع + الطقس)
+    # TTS للرسالة كاملة (الدلع + الطقس) -> OGG/Opus (Telegram voice)
     tts_text = f"{delaa}\nالطقس: {weather}"
     ts = datetime.now().strftime("%H%M%S")
     audio = TTS_DIR / f"delaa_{ts}.wav"
-    if make_tts(tts_text, audio):
-        # MEDIA: so Hermes delivers it as an attachable file (audio plays inline)
-        print(f"MEDIA:{audio}")
+    audio_path = make_tts(tts_text, audio)
+    if audio_path:
+        print(f"MEDIA:{audio_path}")
 
 
 if __name__ == "__main__":
