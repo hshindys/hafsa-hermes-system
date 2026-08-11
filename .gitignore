@@ -1,0 +1,16 @@
+# Secrets / keys — never commit
+مفاتيح/
+**/مفاتيح/**
+*.env
+*api_key*
+*nvapi*
+*sk-or-*
+secrets.md
+**/.smart_lookup_index.json
+
+# OS / temp
+.DS_Store
+Thumbs.db
+.desktop.ini
+*.tmp
+~$*
