@@ -1,0 +1,41 @@
+# OnlyOffice Document Server — docker-compose جاهز
+# المصدر: ONLYOFFICE/Docker-DocumentServer (★2.3k) + onlyoffice-nextcloud (★748)
+# ⚠️ محجوب حالياً: Docker Desktop و WSL2 مش مثبّتين على الجهاز.
+#   لتشغيله: ثبّت WSL2 (`wsl --install`) + Docker Desktop، ثم شغّل compose ده.
+
+services:
+  onlyoffice:
+    container_name: onlyoffice
+    image: onlyoffice/documentserver:latest
+    ports:
+      - "8080:80"
+    environment:
+      - JWT_ENABLED=true
+      # عدّل السر ده قبل التشغيل
+      - JWT_SECRET=CHANGE_ME_STRONG_SECRET
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_logs:/var/log/onlyoffice
+    restart: unless-stopped
+
+  # (اختياري) Nextcloud كسحابة خاصة + ربط OnlyOffice
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud:latest
+    ports:
+      - "8081:80"
+    depends_on:
+      - onlyoffice
+    volumes:
+      - nextcloud_data:/var/www/html
+    restart: unless-stopped
+
+volumes:
+  onlyoffice_data:
+  onlyoffice_logs:
+  nextcloud_data:
+
+# بعد التشغيل:
+#   docker compose up -d
+#   افتح http://localhost:8080  (لوحة OnlyOffice)
+#   اربط Nextcloud بـ OnlyOffice عبر تطبيق onlyoffice-nextcloud + JWT_SECRET

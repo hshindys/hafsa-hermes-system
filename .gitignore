@@ -2,6 +2,7 @@
 مفاتيح/
 **/مفاتيح/**
 *.env
+*.hc
 *api_key*
 *nvapi*
 *sk-or-*
