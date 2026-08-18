@@ -17,6 +17,12 @@ tags: [mission, dark-factory, أهداف, نطاق, prd]
 5. **مراقبة النظام:** SystemHealthCheck يومياً 08:00 + تقرير لـ Telegram.
 6. **باك أب GitHub:** vault على `hafsa-hermes-system` (branch vault-backup).
 7. **self-hosted (عند توفر VPS):** Immich / RustDesk / AppFlowy / Buzz.
+8. **أدوات مفيدة مكتشفة (in-scope工具的مرشحة):**
+   - `mudler/LocalAGI` — self-hosted AI agent (بديل GrokBot محلي)
+   - `swarmclawai/swarmclaw` — multi-agent framework (يكمّل الـ bots)
+   - `deepika-builds/life-os-oss` — health/nutrition tracker (يرتبط بالخطة الطبية)
+   - `benedicteb/obsidian-git-backup-docker` — real-time vault backup
+   - `SelmiAbderrahim/pulsy.org` — uptime monitor (يكمّل SystemHealthCheck)
 
 ## 🔴 خارج النطاق (Out of Scope) — يُرفض تلقائياً
 1. ❌ **أي اشتراك مدفوع** (Claude Pro / Codex / Grok Bot) — إنته على NVIDIA/tencent المجانيين.
@@ -36,3 +42,4 @@ tags: [mission, dark-factory, أهداف, نطاق, prd]
 ## 🚨 آلية الرفض
 الـ agent له الحق يرفض spec يقول: "ده خارج النطاق (انظر mission.md §Out of Scope)".
 مثال: spec "اشترك في GrokBot بـ $300" → **مرفوض** (هدف 2 في Out of Scope + مدفوع).
+mktemp: failed to create file via template '/c/Users/hshin/AppData/Local/hermes/cache/terminal/hermes-snap-9669454b44e8.sh.tmp.XXXXXXXXXX': No such file or directory
