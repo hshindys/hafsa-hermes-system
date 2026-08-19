@@ -2,3 +2,6 @@
 *.key
 __pycache__
 .env
+
+# Secrets and keys directory
+مفاتيح/
