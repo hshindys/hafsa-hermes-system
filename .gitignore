@@ -5,3 +5,11 @@ __pycache__
 
 # Secrets and keys directory
 مفاتيح/
+node_modules/
+.docusaurus/
+*.pdf
+*.xlsx
+*.xls
+AI-Skills-Research/
+القص*
+docs-site/
